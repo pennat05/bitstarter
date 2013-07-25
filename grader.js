@@ -31,32 +31,28 @@ var parseUrl = function(url,checksfile){
 	if( result instanceof Error){
 	    console.log('Bad URL !!!!');
 	}else{
-	    $ = cheerio.load(result);
-	    console.log(result);
-	    var checkjson =checkHtmlContents(result,checksfile);
-	    var outJson = JSON.stringify(checkJson, null, 4);
+	    fs.writeFileSync('test.html',result);
+	    var checksJson = checkHtmlFile('test.html',checksfile);
+	    var outJson = JSON.stringify(checksJson, null, 4);
+	    fs.writeFileSync('output.json',outJson);
 	    console.log(outJson);
-	    
-	}    
+    	}    
     }		     
 		     
 )};
 
 var checkHtmlFile = function(htmlfile,checksfile){
     $ = cheerioHtmlFile(htmlfile);
-    return checkHtmlContents($,checksfile);    
-};
-
-
-var checkHtmlContents = function(contents,checksfile){
-var checks = loadChecks(checksfile).sort();
+    var checks = loadChecks(checksfile).sort();
     var out = {};
     for(var ii in checks){
-	var present = contents(checks[ii]).length > 0;
+	var present = $(checks[ii]).length > 0;
 	out[checks[ii]] = present;
   };
     return out;
+
 };
+
 
 
 var clone = function(fn){
@@ -70,19 +66,17 @@ if(require.main == module) {
         .option('-u --url <url>', 'Path to url' )
         .parse(process.argv);
     
- 
+    var checksJson ;
     if(program.url){
 	console.log('Url exists');
 	parseUrl(program.url,program.checks);
-	console.log(checkJson);
     }else{
-	var checkJson = checkHtmlFile(program.file, program.checks);
-	var outJson = JSON.stringify(checkJson, null, 4);
+	checksJson = checkHtmlFile(program.file, program.checks);
+	var outJson = JSON.stringify(checksJson,null,4);
 	console.log(outJson);
+	
     }	
-    
-    
-} else {
+   } else {
     exports.checkHtmlFile = checkHtmlFile;
 }
 
